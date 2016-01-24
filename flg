@@ -57,6 +57,8 @@ CREATE TABLE cells (mcc INTEGER,mnc INTEGER,lac INTEGER,cid INTEGER,longitude RE
 .import "$OCI_FILE" cells_import
 .import "$MOZ_FILE" cells_import
 
+UPDATE cells_import SET samples=1 WHERE samples IS NULL OR samples < 1;
+
 INSERT INTO cells
 SELECT mcc, mnc, lac, cid,
   sum(longitude * samples) / sum(samples) as longitude,
@@ -71,7 +73,6 @@ DROP TABLE cells_import;
 
 UPDATE cells SET accuracy=500 WHERE accuracy < 500;
 UPDATE cells SET accuracy=100000 WHERE accuracy > 100000;
-UPDATE cells SET samples=1 WHERE samples IS NULL OR samples < 1;
 
 CREATE INDEX _idx1 ON cells (mcc, mnc, lac, cid);
 CREATE INDEX _idx2 ON cells (lac, cid);
