@@ -1,6 +1,4 @@
 # FastLacellsGenerator
-Fast lacells.db database generator script for LocalGSMBackend by n76
-
 Simple script to quickly generate lacells.db cell database for LocalGSMBackend.
 
 Using very fast internet connection, it can generate Poland (~1.000.000 cells) database in just under 2 minutes on dual core x64 Atom D510 CPU.
