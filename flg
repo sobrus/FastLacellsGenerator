@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# FLG - Fast Lacells.db Generator
+#
+# Simple script to quickly download and generate lacells.db for LocalGSMBackend by n76
+# https://github.com/n76/Local-GSM-Backend
+# Uses both Mozilla Location Service and OpenCellID databases as source
+# Based on lacells-creator by wvengen and n76
+#
+# Licensed under GPLv3 or later
+# (C)2016 Sebastian Obrusiewicz
+# sobrus@o2.pl
+
+#CONFIG_BEGIN
+
+MCC="260|262"		#contry codes separated with "|", for example "260|262". Leave dot+asterisk ".*" for all countries
+RADIO="GSM|UMTS|LTE"	#you can remove LTE if your phone does not support it
+API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"  #your OCID API key, one key can download database only once per day
+
+TMP_DIR='/tmp'		#for CSV files only, use disk if you don't have enough RAM, AND remember to have enough disk space in /var/tmp for sqlite temporary files (about 10GB for full database)!
+OCI_FILE="ocid.csv"	#opencellid temporary file name
+MOZ_FILE="mozilla.csv"	#mozilla temporary file name
+
+#CONFIG_END
+
+OCI_FILE=$TMP_DIR"/"$OCI_FILE
+MOZ_FILE=$TMP_DIR"/"$MOZ_FILE
+
+function download_ocid
+{
+  echo "Downloading from OCID using $API_KEY"
+  wget -qO- "http://opencellid.org/downloads/?apiKey=${API_KEY}&filename=cell_towers.csv.gz" | gunzip | egrep "^($RADIO),($MCC),"  > $OCI_FILE
+}
+
+function download_mozilla
+{
+  NW=`date -u "+%Y-%m-%d"`
+  echo "Downloading from mozilla"
+  wget -qO- "https://d17pt8qph6ncyq.cloudfront.net/export/MLS-full-cell-export-${NW}T000000.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $MOZ_FILE
+}
+
+function process
+{
+rm lacells.db
+echo "Generating database"
+
+sqlite3 lacells.db <<-SQL
+PRAGMA synchronous = OFF;
+PRAGMA journal_mode = OFF;
+
+CREATE TEMP TABLE cells_import (radio TEXT,mcc INTEGER,mnc INTEGER,lac INTEGER,cid INTEGER,unit STRING,longitude NUMERIC,latitude NUMERIC,accuracy INTEGER,samples INTEGER,changeable BOOLEAN,created INTEGER,updated INTEGER, avgSignal INTEGER);
+CREATE TABLE cells (mcc INTEGER,mnc INTEGER,lac INTEGER,cid INTEGER,longitude REAL,latitude REAL,altitude REAL,accuracy REAL,samples INTEGER);
+
+.header on
+.mode csv
+
+.import "$OCI_FILE" cells_import
+.import "$MOZ_FILE" cells_import
+
+INSERT INTO cells
+SELECT mcc, mnc, lac, cid,
+  sum(longitude * samples) / sum(samples) as longitude,
+  sum(latitude  * samples) / sum(samples) as latitude,
+  -1 as altitude,
+  sum(accuracy  * samples) / sum(samples) as accuracy,
+  sum(samples) as samples
+FROM cells_import
+GROUP BY mcc, mnc, lac, cid;
+
+DROP TABLE cells_import;
+
+UPDATE cells SET accuracy=500 WHERE accuracy < 500;
+UPDATE cells SET accuracy=100000 WHERE accuracy > 100000;
+UPDATE cells SET samples=1 WHERE samples IS NULL OR samples < 1;
+
+CREATE INDEX _idx1 ON cells (mcc, mnc, lac, cid);
+CREATE INDEX _idx2 ON cells (lac, cid);
+
+VACUUM;
+
+SQL
+}
+
+function download
+{
+  download_ocid &
+  OP=$!
+  download_mozilla &
+  MO=$!
+  wait $OP
+  wait $MO
+  
+  if [ -s $MOZ_FILE ] && [ -s $OCI_FILE ]; then
+    return 0
+  else
+    echo "Download error"
+    return 1
+  fi
+}
+
+download
+
+if [ "$?" == "0" ]; then
+  process
+fi
+
+rm $OCI_FILE
+rm $MOZ_FILE
