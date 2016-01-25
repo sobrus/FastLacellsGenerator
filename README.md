@@ -1,5 +1,6 @@
 # FastLacellsGenerator
 Simple script to quickly generate lacells.db cell database for Local-GSM-Backend project:
+
 https://github.com/n76/Local-GSM-Backend
 
 Uses both Mozilla Location Service and OpenCellID databases as source.
