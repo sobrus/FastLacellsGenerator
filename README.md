@@ -1,5 +1,5 @@
 # FastLacellsGenerator
-Simple script to quickly generate lacells.db cell database for Local-GSM-Backend project:
+Simple script to quickly generate lacells.db cell database for Local-GSM-Backend project by n76:
 
 https://github.com/n76/Local-GSM-Backend
 
