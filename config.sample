@@ -29,7 +29,9 @@ API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 # (300MB+ for D-A-CH, i.e. MCC="228|232|262")
 TMP_DIR='/tmp'
 
-# KEEP_CSV: whether to keep (1) or delete (0) the CSV files after processing.
+# KEEP_FILES: whether to keep (1) or delete (0) the CSV files after processing
+# (and the DB file from the previous run).
 # As you can download the OpenCellID database only once per day and API key,
-# keeping the files might be useful for testing purposes.
-KEEP_CSV=0
+# keeping the files might be useful for testing purposes. Setting this to 1
+# will keep exactly 1 backup (multiple backups are not implemented currently).
+KEEP_FILES=0
