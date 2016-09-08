@@ -16,6 +16,7 @@ MCC="260|262"           #contry codes separated with "|", for example "260|262".
 RADIO="GSM|UMTS|LTE"    #you can remove LTE if your phone does not support it
 API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"  #your OCID API key, one key can download database only once per day
 TMP_DIR='/tmp'          #for CSV files only, use disk if you don't have enough RAM, AND remember to have enough disk space in /var/tmp for sqlite temporary files
+KEEP_CSV=0              #whether to keep (1) or delete (0) the CSV files after processing
 #DEFAULT_CONFIG_END
 
 #USER_CONFIG_BEGIN
@@ -39,7 +40,7 @@ wait $MO
 
 if [ -s $MOZ_FILE ] && [ -s $OCI_FILE ]; then
 
-rm lacells.db
+[[ -f lacells.db ]] && rm lacells.db
 echo "Generating database"
 
 sqlite3 lacells.db <<-SQL
@@ -82,5 +83,7 @@ else
   echo "Download error"
 fi
 
-rm $OCI_FILE
-rm $MOZ_FILE
+if [[ $KEEP_CSV -eq 0 ]]; then
+  rm $OCI_FILE
+  rm $MOZ_FILE
+fi
