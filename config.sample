@@ -1,0 +1,28 @@
+# =============================================================================
+# This is an example config file.
+# Rename it to "config" (just removing the suffix) and adjust it to your needs.
+# You can ommit values here, as defaults are defined inside the main script.
+# If the main script finds a file named "config" in the same directory where
+# it resides, it will be "sourced" and thus your settings here will overwrite
+# the defaults defined there.
+# =============================================================================
+
+# MCC: contry codes to restrict the resulting database to, separated with "|".
+# A list of available MCC values can be found e.g. at Wikipedia:
+# https://en.wikipedia.org/wiki/Mobile_country_code
+# For example "260|262" for Poland and Germany.
+# Leave dot+asterisk ".*" for all countries
+MCC="260|262"
+
+# RADIO: you can e.g. remove LTE if your phone does not support it
+RADIO="GSM|UMTS|LTE"
+
+# API_KEY: Your OpenCellID API Key. Without a valid API key, you cannot download
+# CellID data from OpenCellID. One key can download database only once per day.
+# Get your key at http://opencellid.org/
+API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+
+# TMP_DIR: for CSV files only, use disk if you don't have enough RAM, AND
+# remember to have enough disk space in /var/tmp for sqlite temporary files
+# (about 10GB for full database)!
+TMP_DIR='/tmp'
