@@ -51,7 +51,7 @@ wait $MO
 if [ -s $MOZ_FILE ] && [ -s $OCI_FILE ]; then
 
 [[ -f lacells.db ]] && {
-  if [[ $KEEP_FILES -eq 0 ]]; then
+  if [[ $KEEP_FILES -eq 0 || ! -s lacells.db ]]; then   # don't back up an empty DB
     rm lacells.db
   else
     mv lacells.db.bak
