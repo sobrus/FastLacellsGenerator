@@ -25,7 +25,8 @@ API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 # TMP_DIR: for CSV files only, use disk if you don't have enough RAM, AND
 # remember to have enough disk space in /var/tmp for sqlite temporary files
 # (about 10GB for full database)!
-# Expect the CSV files using ~350MB
+# Expect the CSV files using 4GB+ if you didn't restrict RADIO or MCC
+# (300MB+ for D-A-CH, i.e. MCC="228|232|262")
 TMP_DIR='/tmp'
 
 # KEEP_CSV: whether to keep (1) or delete (0) the CSV files after processing.
