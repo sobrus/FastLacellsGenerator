@@ -4,7 +4,7 @@
 #
 # Simple script to quickly download and generate lacells.db for LocalGSMBackend by n76
 # https://github.com/n76/Local-GSM-Backend
-# Uses both Mozilla Location Service and OpenCellID databases as source
+# Uses Mozilla Location Service, OpenCellID and radiocells.org databases as source
 # Based on lacells-creator by wvengen and n76
 #
 # Licensed under GPLv3 or later
@@ -12,11 +12,22 @@
 # sobrus@o2.pl
 
 #DEFAULT_CONFIG_BEGIN
-MCC="260|262"           #contry codes separated with "|", for example "260|262". Leave dot+asterisk ".*" for all countries
-RADIO="GSM|UMTS|LTE"    #you can remove LTE if your phone does not support it
+ENABLE_OCI=1 #enable OpenCellID data source
+ENABLE_MOZ=1 #enable Mozilla Location Services (MLS) data source
+ENABLE_RCO=0 #enable radiocells.org data source (it can be quite slow)
+
+MCC="260|262"            #contry codes separated with "|", for example "260|262". Leave dot+asterisk ".*" for all countries
+RCO_SRC_FILE="pl.sqlite" #radiocells.org source database file, set "openbmap.sqlite" for entire world database, see https://radiocells.org/downloads for smaller country specific files, for example "pl.sqlite" for Poland
+RADIO="GSM|UMTS|LTE"     #you can remove LTE if your phone does not support it
 API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"  #your OCID API key, one key can download database only once per day
-TMP_DIR='/tmp'          #for CSV files only, use disk if you don't have enough RAM, AND remember to have enough disk space in /var/tmp for sqlite temporary files
-KEEP_FILES=0              #whether to keep (1) or delete (0) the CSV files after processing
+TMP_DIR='/tmp'           #for temporary files only, use disk if you don't have enough RAM, AND remember to have enough disk space in /var/tmp for sqlite temporary files
+KEEP_FILES=0             #whether to keep (1) or delete (0) the CSV files after processing
+
+#do not edit following variables, unless you know what you're doing
+EMPTY=',,,,,,,,,,,,,'           #dummy empty file for disabled sources
+OCI_FILE=$TMP_DIR"/ocid.csv"    #opencellid temporary file
+MOZ_FILE=$TMP_DIR"/mozilla.csv" #mozilla temporary file
+RCO_FILE=$TMP_DIR"/rco.csv"     #radiocells.org temporary file
 #DEFAULT_CONFIG_END
 
 #USER_CONFIG_BEGIN
@@ -26,37 +37,78 @@ if [[ -f "${BINDIR}/config" ]]; then
 fi
 #USER_CONFIG_END
 
-NW=`date -u "+%Y-%m-%d"`
-OCI_FILE=$TMP_DIR"/ocid.csv"	#opencellid temporary file name
-MOZ_FILE=$TMP_DIR"/mozilla.csv"	#mozilla temporary file name
-
-echo "Downloading data"
-wget -qO- "http://opencellid.org/downloads/?apiKey=${API_KEY}&filename=cell_towers.csv.gz" | gunzip | egrep "^($RADIO),($MCC),"  > $OCI_FILE &
-OP=$!
-wget -qO- "https://d17pt8qph6ncyq.cloudfront.net/export/MLS-full-cell-export-${NW}T000000.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $MOZ_FILE &
-MO=$!
-wait $OP
-wait $MO
-
-[[ ! -s $OCI_FILE && -s ${OCI_FILE}.bak ]] && { # download from OCI failed (e.g. due to download limit)
-  echo "Download from OpenCellID failed, using backup CSV"
-  mv ${OCI_FILE}.bak $OCI_FILE
-}
-[[ ! -s $MOZ_FILE && -s ${MOZ_FILE}.bak ]] && { # download from MOZ failed (for whatever reason)
-  echo "Download from Mozilla failed, using backup CSV"
-  mv ${MOZ_FILE}.bak $MOZ_FILE
-}
-
-
-if [ -s $MOZ_FILE ] && [ -s $OCI_FILE ]; then
-
-[[ -f lacells.db ]] && {
-  if [[ $KEEP_FILES -eq 0 || ! -s lacells.db ]]; then   # don't back up an empty DB
-    rm lacells.db
-  else
-    mv lacells.db.bak
+function manage_backup
+{
+  file=$1
+  if [ -s $file ] 
+  then
+    if [ $KEEP_FILES == "1" ]
+    then
+      cp -alf $file $file".bak"
+    fi
+  elif [ -s $file".bak" ] && [ "${file##*.}" == "csv" ]
+  then
+    echo "Using" $file".bak backup file"
+    cp -alf $file".bak" $file
   fi
 }
+
+function download_ocid
+{
+  if [ $ENABLE_OCI == "1" ]
+  then
+    wget -qO- "http://opencellid.org/downloads/?apiKey=${API_KEY}&filename=cell_towers.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $OCI_FILE
+    manage_backup $OCI_FILE
+  else
+    echo $EMPTY > $OCI_FILE 
+  fi
+}
+
+function download_mozilla
+{
+  if [ $ENABLE_MOZ == "1" ]
+  then
+    NW=`date -u "+%Y-%m-%d"`
+    wget -qO- "https://d17pt8qph6ncyq.cloudfront.net/export/MLS-full-cell-export-${NW}T000000.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $MOZ_FILE
+    manage_backup $MOZ_FILE
+  else
+    echo $EMPTY > $MOZ_FILE
+  fi
+}
+
+function download_radiocells
+{
+  if [ $ENABLE_RCO == "1" ]
+  then
+    RCO_SELECT="SELECT technology, mcc, mnc, area, cid, NULL, longitude, latitude, 1000 accuracy, measurements, NULL, NULL, NULL, NULL FROM cell_zone;"
+    wget -qO- "https://cdn.radiocells.org/"$RCO_SRC_FILE > $TMP_DIR"/"$RCO_SRC_FILE
+    sqlite3 -header -csv $TMP_DIR"/"$RCO_SRC_FILE "$RCO_SELECT" | egrep "^($RADIO),($MCC)," > $RCO_FILE
+    rm $TMP_DIR"/"$RCO_SRC_FILE
+    manage_backup $RCO_FILE
+  else
+    echo $EMPTY > $RCO_FILE
+  fi
+}
+
+echo "Downloading data"
+
+download_ocid &
+OP=$!
+download_mozilla &
+MO=$!
+download_radiocells &
+RO=$!
+
+wait $OP
+wait $MO
+wait $RO
+
+if [ -s $MOZ_FILE ] && [ -s $OCI_FILE ] && [ -s $RCO_FILE ]
+then
+
+manage_backup lacells.db
+rm lacells.db
+
 echo "Generating database"
 
 sqlite3 lacells.db <<-SQL
@@ -71,6 +123,7 @@ CREATE TABLE cells (mcc INTEGER,mnc INTEGER,lac INTEGER,cid INTEGER,longitude RE
 
 .import "$OCI_FILE" cells_import
 .import "$MOZ_FILE" cells_import
+.import "$RCO_FILE" cells_import
 
 UPDATE cells_import SET samples=1 WHERE samples IS NULL OR samples < 1;
 
@@ -99,10 +152,6 @@ else
   echo "Download error"
 fi
 
-if [[ $KEEP_FILES -eq 0 ]]; then
-  rm $OCI_FILE
-  rm $MOZ_FILE
-else
-  mv $OCI_FILE ${OCI_FILE}.bak
-  mv $MOZ_FILE ${MOZ_FILE}.bak
-fi
+rm $OCI_FILE
+rm $MOZ_FILE
+rm $RCO_FILE
