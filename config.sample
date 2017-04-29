@@ -7,6 +7,17 @@
 # the defaults defined there.
 # =============================================================================
 
+# ENABLE_XXX - enable data sources for database generation
+# Sources currently supported are:
+# OCI - OpenCellID database - http://www.opencellid.org/
+# MOZ - Mozilla Location Services (MLS) database - https://location.services.mozilla.com/
+# RCO - Radiocells.org database (formerly know as openbmap.org - https://radiocells.org/.
+# Please note that  OCI database requires free api key to access data
+
+ENABLE_OCI=1
+ENABLE_MOZ=1
+ENABLE_RCO=0
+
 # MCC: contry codes to restrict the resulting database to, separated with "|".
 # A list of available MCC values can be found e.g. at Wikipedia:
 # https://en.wikipedia.org/wiki/Mobile_country_code
@@ -22,7 +33,13 @@ RADIO="GSM|UMTS|LTE"
 # Get your key at http://opencellid.org/
 API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 
-# TMP_DIR: for CSV files only, use disk if you don't have enough RAM, AND
+# RCO_SRC_FILE - radiocells.org source database file, set "openbmap.sqlite" for entire world database
+# see https://radiocells.org/downloads for smaller country specific files, for example "pl.sqlite" for Poland 
+# radiocells.org offers only uncompressed data and slow download speeds, so downloading whole database can take some time
+# consider using country specific data for better performance
+RCO_SRC_FILE="openbmap.sqlite" 
+
+# TMP_DIR: for temporary files only, use disk if you don't have enough RAM, AND
 # remember to have enough disk space in /var/tmp for sqlite temporary files
 # (about 10GB for full database)!
 # Expect the CSV files using 4GB+ if you didn't restrict RADIO or MCC
@@ -35,3 +52,4 @@ TMP_DIR='/tmp'
 # keeping the files might be useful for testing purposes. Setting this to 1
 # will keep exactly 1 backup (multiple backups are not implemented currently).
 KEEP_FILES=0
+
