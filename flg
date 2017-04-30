@@ -20,14 +20,14 @@ MCC="260|262"            #contry codes separated with "|", for example "260|262"
 RCO_SRC_FILE="pl.sqlite" #radiocells.org source database file, set "openbmap.sqlite" for entire world database, see https://radiocells.org/downloads for smaller country specific files, for example "pl.sqlite" for Poland
 RADIO="GSM|UMTS|LTE"     #you can remove LTE if your phone does not support it
 API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"  #your OCID API key, one key can download database only once per day
-TMP_DIR='/tmp'           #for temporary files only, use disk if you don't have enough RAM, AND remember to have enough disk space in /var/tmp for sqlite temporary files
+TMPDIR='/tmp'           #for temporary files only, use disk if you don't have enough RAM, AND remember to have enough disk space in /var/tmp for sqlite temporary files
 KEEP_FILES=0             #whether to keep (1) or delete (0) the CSV files after processing
 
 #do not edit following variables, unless you know what you're doing
 EMPTY=',,,,,,,,,,,,,'           #dummy empty file for disabled sources
-OCI_FILE=$TMP_DIR"/ocid.csv"    #opencellid temporary file
-MOZ_FILE=$TMP_DIR"/mozilla.csv" #mozilla temporary file
-RCO_FILE=$TMP_DIR"/rco.csv"     #radiocells.org temporary file
+OCI_FILE=$TMPDIR"/ocid.csv"    #opencellid temporary file
+MOZ_FILE=$TMPDIR"/mozilla.csv" #mozilla temporary file
+RCO_FILE=$TMPDIR"/rco.csv"     #radiocells.org temporary file
 #DEFAULT_CONFIG_END
 
 #USER_CONFIG_BEGIN
@@ -44,14 +44,15 @@ function manage_backup
   then
     if [ $KEEP_FILES == "1" ]
     then
-      cp -alf $file $file".bak"
+      gzip -kf $file
     fi
-  elif [ -s $file".bak" ] && [ "${file##*.}" == "csv" ]
+  elif [ -s $file".gz" ] && [ "${file##*.}" == "csv" ]
   then
-    echo "Using" $file".bak backup file"
-    cp -alf $file".bak" $file
+    echo "Using" $file".gz backup file"
+    gzip -dkf $file".gz"
   fi
 }
+
 
 function download_ocid
 {
@@ -81,9 +82,9 @@ function download_radiocells
   if [ $ENABLE_RCO == "1" ]
   then
     RCO_SELECT="SELECT technology, mcc, mnc, area, cid, NULL, longitude, latitude, 1000 accuracy, measurements, NULL, NULL, NULL, NULL FROM cell_zone;"
-    wget -qO- "https://cdn.radiocells.org/"$RCO_SRC_FILE > $TMP_DIR"/"$RCO_SRC_FILE
-    sqlite3 -header -csv $TMP_DIR"/"$RCO_SRC_FILE "$RCO_SELECT" | egrep "^($RADIO),($MCC)," > $RCO_FILE
-    rm $TMP_DIR"/"$RCO_SRC_FILE
+    wget -qO- "https://cdn.radiocells.org/"$RCO_SRC_FILE > $TMPDIR"/"$RCO_SRC_FILE
+    sqlite3 -header -csv $TMPDIR"/"$RCO_SRC_FILE "$RCO_SELECT" | egrep "^($RADIO),($MCC)," > $RCO_FILE
+    rm $TMPDIR"/"$RCO_SRC_FILE
     manage_backup $RCO_FILE
   else
     echo $EMPTY > $RCO_FILE
