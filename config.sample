@@ -44,7 +44,8 @@ RCO_SRC_FILE="openbmap.sqlite"
 # (about 10GB for full database)!
 # Expect the CSV files using 4GB+ if you didn't restrict RADIO or MCC
 # (300MB+ for D-A-CH, i.e. MCC="228|232|262")
-TMP_DIR='/tmp'
+# This vaiable should also affect SQLite
+TMPDIR='/tmp'
 
 # KEEP_FILES: whether to keep (1) or delete (0) the CSV files after processing
 # (and the DB file from the previous run).
