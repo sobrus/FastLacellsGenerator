@@ -58,7 +58,7 @@ function download_ocid
 {
   if [ $ENABLE_OCI == "1" ]
   then
-    wget -qO- "http://opencellid.org/downloads/?apiKey=${API_KEY}&filename=cell_towers.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $OCI_FILE
+    wget -qO- "https://download.unwiredlabs.com/ocid/downloads?token=${API_KEY}&file=cell_towers.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $OCI_FILE
     manage_backup $OCI_FILE
   else
     echo $EMPTY > $OCI_FILE 
