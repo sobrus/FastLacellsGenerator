@@ -19,8 +19,8 @@ ENABLE_RCO=0 #enable radiocells.org data source (it can be quite slow)
 MCC="260|262"            #contry codes separated with "|", for example "260|262". Leave dot+asterisk ".*" for all countries
 RCO_SRC_FILE="pl.sqlite" #radiocells.org source database file, set "openbmap.sqlite" for entire world database, see https://radiocells.org/downloads for smaller country specific files, for example "pl.sqlite" for Poland
 RADIO="GSM|UMTS|LTE"     #you can remove LTE if your phone does not support it
-API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"  #your OCID API key, one key can download database only once per day
-TMPDIR='/tmp'           #for temporary files only, use disk if you don't have enough RAM, AND remember to have enough disk space in /var/tmp for sqlite temporary files
+TOKEN="XXXXXXXXXXXXXX" #your OCID token
+TMPDIR='/tmp'            #for temporary files only, use disk if you don't have enough RAM, AND remember to have enough disk space in /var/tmp for sqlite temporary files
 KEEP_FILES=0             #whether to keep (1) or delete (0) the CSV files after processing
 
 #do not edit following variables, unless you know what you're doing
@@ -58,7 +58,7 @@ function download_ocid
 {
   if [ $ENABLE_OCI == "1" ]
   then
-    wget -qO- "https://download.unwiredlabs.com/ocid/downloads?token=${API_KEY}&file=cell_towers.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $OCI_FILE
+    wget -qO- "https://download.unwiredlabs.com/ocid/downloads?token=${TOKEN}&file=cell_towers.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $OCI_FILE
     manage_backup $OCI_FILE
   else
     echo $EMPTY > $OCI_FILE 
