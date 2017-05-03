@@ -28,10 +28,10 @@ MCC="260|262"
 # RADIO: you can e.g. remove LTE if your phone does not support it
 RADIO="GSM|UMTS|LTE"
 
-# API_KEY: Your OpenCellID API Key. Without a valid API key, you cannot download
+# TOKEN: Your OpenCellID token. Without a valid token key, you cannot download
 # CellID data from OpenCellID. One key can download database only once per day.
-# Get your key at http://opencellid.org/
-API_KEY="dev-usr--XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+# Get your free key at http://opencellid.org/
+TOKEN="XXXXXXXXXXXXXX"
 
 # RCO_SRC_FILE - radiocells.org source database file, set "openbmap.sqlite" for entire world database
 # see https://radiocells.org/downloads for smaller country specific files, for example "pl.sqlite" for Poland 
