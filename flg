@@ -19,7 +19,7 @@ ENABLE_RCO=0 #enable radiocells.org data source (it can be quite slow)
 MCC="260|262"            #contry codes separated with "|", for example "260|262". Leave dot+asterisk ".*" for all countries
 RCO_SRC_FILE="pl.sqlite" #radiocells.org source database file, set "openbmap.sqlite" for entire world database, see https://radiocells.org/downloads for smaller country specific files, for example "pl.sqlite" for Poland
 RADIO="GSM|UMTS|LTE"     #you can remove LTE if your phone does not support it
-TOKEN="XXXXXXXXXXXXXX" #your OCID token
+TOKEN="XXXXXXXXXXXXXX"   #your OCID token, required to download from OpenCellID. Get your free token at https://opencellid.org/
 TMPDIR='/tmp'            #for temporary files only, use disk if you don't have enough RAM, AND remember to have enough disk space in /var/tmp for sqlite temporary files
 KEEP_FILES=0             #whether to keep (1) or delete (0) the CSV files after processing
 
