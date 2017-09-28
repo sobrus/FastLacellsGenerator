@@ -28,9 +28,14 @@ EMPTY=',,,,,,,,,,,,,'           #dummy empty file for disabled sources
 #DEFAULT_CONFIG_END
 
 #USER_CONFIG_BEGIN
-BINDIR=$( dirname "$(readlink -f "$0")" ) #"
+BINDIR=$( dirname "$0" ) #"
 if [[ -f "${BINDIR}/config" ]]; then
+  echo >&2 "Loading config from ${BINDIR}/config"
   . "${BINDIR}/config"
+fi
+if [[ -f "${BINDIR}/flg-config" ]]; then
+  echo >&2 "Loading config from ${BINDIR}/flg-config"
+  . "${BINDIR}/flg-config"
 fi
 #USER_CONFIG_END
 
