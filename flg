@@ -25,9 +25,6 @@ KEEP_FILES=0             #whether to keep (1) or delete (0) the CSV files after 
 
 #do not edit following variables, unless you know what you're doing
 EMPTY=',,,,,,,,,,,,,'           #dummy empty file for disabled sources
-OCI_FILE=$TMPDIR"/ocid.csv"    #opencellid temporary file
-MOZ_FILE=$TMPDIR"/mozilla.csv" #mozilla temporary file
-RCO_FILE=$TMPDIR"/rco.csv"     #radiocells.org temporary file
 #DEFAULT_CONFIG_END
 
 #USER_CONFIG_BEGIN
@@ -36,6 +33,10 @@ if [[ -f "${BINDIR}/config" ]]; then
   . "${BINDIR}/config"
 fi
 #USER_CONFIG_END
+
+OCI_FILE=$TMPDIR"/ocid.csv"    #opencellid temporary file
+MOZ_FILE=$TMPDIR"/mozilla.csv" #mozilla temporary file
+RCO_FILE=$TMPDIR"/rco.csv"     #radiocells.org temporary file
 
 function manage_backup
 {
