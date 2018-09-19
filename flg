@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # FLG - Fast Lacells.db Generator
 #
@@ -114,7 +114,7 @@ if [ -s $MOZ_FILE ] && [ -s $OCI_FILE ] && [ -s $RCO_FILE ]
 then
 
 manage_backup lacells.db
-rm lacells.db
+rm -f lacells.db
 
 echo "Generating database"
 
