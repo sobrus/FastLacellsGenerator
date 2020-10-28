@@ -76,7 +76,7 @@ function download_mozilla
   if [ $ENABLE_MOZ == "1" ]
   then
     NW=`date -u "+%Y-%m-%d"`
-    wget -qO- "https://d3r3tk5171bc5t.cloudfront.net/export/MLS-full-cell-export-${NW}T000000.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $MOZ_FILE
+    wget -qO- "https://d2koia3g127518.cloudfront.net/export/MLS-full-cell-export-${NW}T000000.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $MOZ_FILE
     manage_backup $MOZ_FILE
   else
     echo $EMPTY > $MOZ_FILE
