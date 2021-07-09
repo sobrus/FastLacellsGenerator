@@ -64,7 +64,7 @@ function download_ocid
 {
   if [ $ENABLE_OCI == "1" ]
   then
-    wget -qO- "https://download.unwiredlabs.com/ocid/downloads?token=${TOKEN}&file=cell_towers.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $OCI_FILE
+    wget -qO- "https://download.unwiredlabs.com/ocid/downloads?token=${TOKEN}&file=cell_towers.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $OCI_FILE || true
     manage_backup $OCI_FILE
   else
     echo $EMPTY > $OCI_FILE 
@@ -76,7 +76,7 @@ function download_mozilla
   if [ $ENABLE_MOZ == "1" ]
   then
     NW=`date -u "+%Y-%m-%d"`
-    wget -qO- "https://d2koia3g127518.cloudfront.net/export/MLS-full-cell-export-${NW}T000000.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $MOZ_FILE
+    wget -qO- "https://d2koia3g127518.cloudfront.net/export/MLS-full-cell-export-${NW}T000000.csv.gz" | gunzip | egrep "^($RADIO),($MCC)," > $MOZ_FILE || true
     manage_backup $MOZ_FILE
   else
     echo $EMPTY > $MOZ_FILE
@@ -88,8 +88,7 @@ function download_radiocells
   if [ $ENABLE_RCO == "1" ]
   then
     RCO_SELECT="SELECT technology, mcc, mnc, area, cid, NULL, longitude, latitude, 1000 accuracy, measurements, NULL, NULL, NULL, NULL FROM cell_zone;"
-    wget -qO- "https://cdn.radiocells.org/"$RCO_SRC_FILE > $TMPDIR"/"$RCO_SRC_FILE
-    sqlite3 -header -csv $TMPDIR"/"$RCO_SRC_FILE "$RCO_SELECT" | egrep "^($RADIO),($MCC)," > $RCO_FILE
+    wget -qO- "https://cdn.radiocells.org/"$RCO_SRC_FILE > $TMPDIR"/"$RCO_SRC_FILE && sqlite3 -header -csv $TMPDIR"/"$RCO_SRC_FILE "$RCO_SELECT" | egrep "^($RADIO),($MCC)," > $RCO_FILE
     rm $TMPDIR"/"$RCO_SRC_FILE
     manage_backup $RCO_FILE
   else
