@@ -43,6 +43,26 @@ OCI_FILE=$TMPDIR"/ocid.csv"    #opencellid temporary file
 MOZ_FILE=$TMPDIR"/mozilla.csv" #mozilla temporary file
 RCO_FILE=$TMPDIR"/rco.csv"     #radiocells.org temporary file
 
+function dependency_check
+{
+  local errors=0
+  if [[ -z "$(which wget)" ]];
+  then
+    echo "wget not found. This is required to download the files."
+    errors+=1
+  fi
+  if [[ -z "$(which sqlite3)" ]];
+  then
+    echo "sqlite3 not found. This is required to create the cell database."
+    errors+=1
+  fi
+  if [[ $errors -gt 0 ]];
+  then
+    echo "Aborting as dependencies are not met."
+    exit 1
+  fi
+}
+
 function manage_backup
 {
   file=$1
@@ -96,6 +116,7 @@ function download_radiocells
   fi
 }
 
+dependency_check
 echo "Downloading data"
 
 download_ocid &
